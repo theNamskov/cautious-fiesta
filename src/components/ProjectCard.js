@@ -52,8 +52,8 @@ export function ProjectCard(props) {
       <Contributors>
         { !!num_contributors &&
           <ContributorAvatars>
-            {props.contributors.slice(0,2).map(contributor => {
-              return <Avatar key={contributor.avatar} imageUrl={contributor.avatar}/>
+            {props.contributors.slice(0,2).map((contributor, index) => {
+              return <Avatar key={contributor.avatar||index} imageUrl={contributor.avatar||'http://avatars.githubusercontent.com/u/42612171?s=48&v=4'}/>
             })}
             {num_contributors > 2 &&
               <Avatar text background="#fff">+{num_contributors - 2}</Avatar>

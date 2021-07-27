@@ -14,6 +14,7 @@ const StyledButton = styled.button`
   cursor: pointer;
   white-space: nowrap;
   color: #fff;
+  transition: .2s;
   background-color: ${props =>
     props.color
   };
@@ -49,6 +50,10 @@ const StyledButton = styled.button`
       background-color: ${props.color};
     }
   `}
+
+  :disabled {
+    background-color: #A8A8A8;
+  }
 `;
 
 export function Button(props) {

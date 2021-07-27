@@ -3,6 +3,7 @@ import { SquareImage } from "./components/SquareImage";
 import { P } from "./components/Typography";
 import { ExpansionPanel } from "./components/ExpansionPanel"
 import { ProjectCard } from "./components/ProjectCard";
+import { makeOptions, useFetch } from "./hooks/useFetch";
 
 const Main = styled.div`
   display: grid;
@@ -24,35 +25,19 @@ const EmployeeProjectCards = styled.div`
 `;
 
 function EmployeeDetails(props) {
-  const EmployeeProjects = [
-    {
-      projTitle: 'My second project',
-      desc: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod.',
-      contributors: [
-        { avatar: 'http://avatars.githubusercontent.com/u/42612171?s=48&v=4' },
-        { avatar: 'https://avatars.githubusercontent.com/u/41073590?v=4' },
-        {}
-      ]
-    },
-    {
-      projTitle: 'My third project',
-      desc: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod.',
-      contributors: [
-        { avatar: 'http://avatars.githubusercontent.com/u/42612171?s=48&v=4' },
-        { avatar: 'https://avatars.githubusercontent.com/u/41073590?v=4' },
-        {}
-      ]
-    },
-  ];
+  const [employeeProjects] = useFetch('https://principal-serve.herokuapp.com/api/v1/employee-project/' + props.employeeId, makeOptions('GET', true));
+
   const ProjectPanel = [
     {
       title: 'Projects',
       content: (
         <EmployeeProjectCards>
-          {EmployeeProjects.map(project => {
+          {employeeProjects?.map(project => {
             return <ProjectCard
-              key={project.projTitle}
-              {...project}
+              key={project.projectId.name}
+              projTitle={project.projectId.name}
+              desc={project.projectId.description}
+              contributors={project.contributors}
             />
           })}
         </EmployeeProjectCards>
@@ -65,8 +50,8 @@ function EmployeeDetails(props) {
       <Profile>
         <SquareImage size="5em" />
         <div>
-          <P>John Doe</P>
-          <P>Software Engineer</P>
+          <P>{props.employeeName}</P>
+          <P>{props.employeeRole}</P>
         </div>
       </Profile>
       <ExpansionPanel

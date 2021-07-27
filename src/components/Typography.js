@@ -1,12 +1,14 @@
 import { useContext } from "react";
 import styled, { css } from "styled-components";
 import { ThemeContext } from "../contexts/ThemeContext";
+import { resolveColor } from "../util";
 
 /* Global */
 
 /* Shared */
 const sharedFontStyle = css`
   font-weight: ${props => props.bold ? '500' : '400'};
+  color: ${({color, theme}) => color ? resolveColor(color, theme) : 'inherit'};
 `;
 
 /* Headline 1 */
@@ -17,11 +19,10 @@ const StyledH1 = styled.h1`
 `;
 export function H1(props) {
   const { theme } = useContext(ThemeContext);
-  const { fontColor } = theme;
   return (
     <StyledH1
       {...props}
-      fontColor={fontColor}
+      theme={theme}
     >
       { props.children }
     </StyledH1>
@@ -36,11 +37,10 @@ const StyledH2 = styled.h2`
 `;
 export function H2(props) {
   const { theme } = useContext(ThemeContext);
-  const { fontColor } = theme;
   return (
     <StyledH2
       {...props}
-      fontColor={fontColor}
+      theme={theme}
     >
       { props.children }
     </StyledH2>
@@ -55,11 +55,10 @@ const StyledP = styled.p`
 `;
 export function P(props) {
   const { theme } = useContext(ThemeContext);
-  const { fontColor } = theme;
   return (
     <StyledP
       {...props}
-      fontColor={fontColor}
+      theme={theme}
     >
       { props.children }
     </StyledP>
@@ -74,11 +73,10 @@ const StyledP2 = styled.p`
 `;
 export function P2(props) {
   const { theme } = useContext(ThemeContext);
-  const { fontColor } = theme;
   return (
     <StyledP2
       {...props}
-      fontColor={fontColor}
+      theme={theme}
     >
       { props.children }
     </StyledP2>
@@ -93,11 +91,10 @@ const StyledCaption = styled.p`
 `;
 export function Caption(props) {
   const { theme } = useContext(ThemeContext);
-  const { fontColor } = theme;
   return (
     <StyledCaption
       {...props}
-      fontColor={fontColor}
+      theme={theme}
     >
       { props.children }
     </StyledCaption>

@@ -10,6 +10,8 @@ import { SearchBar } from "./components/SearchBar";
 import { ExpansionPanel } from "./components/ExpansionPanel";
 import EmployeeDetails from "./EmployeeDetails";
 import cx from "classnames";
+import { useFetch, makeOptions } from "./hooks/useFetch";
+import { AuthContext } from "./contexts/AuthContext";
 
 
 const UserDetails = styled.div`
@@ -59,8 +61,7 @@ const AddBtn = styled(Button)`
 
 const OverviewContainer = styled.div`
   margin-top: 4.5em;
-  min-height: 70vh;
-  height: 70vh;
+  height: 60em;
   max-width: 800px;
 `;
 
@@ -72,46 +73,25 @@ const ProjectCards = styled.div`
 
 function Main() {
   const { theme } = useContext(ThemeContext);
-  const projects = [
-    {
-      projTitle: 'My first project',
-      desc: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod.',
-      contributors: [
-        { avatar: 'http://avatars.githubusercontent.com/u/42612171?s=48&v=4' },
-        { avatar: 'https://avatars.githubusercontent.com/u/41073590?v=4' },
-        {}, {}, {}
-      ]
-    },
-    {
-      projTitle: 'My second project',
-      desc: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod.',
-      contributors: [
-        { avatar: 'http://avatars.githubusercontent.com/u/42612171?s=48&v=4' },
-        { avatar: 'https://avatars.githubusercontent.com/u/41073590?v=4' },
-        {}
-      ]
-    },
-    {
-      projTitle: 'My third project',
-      desc: 'Lorem ipsum dolor sit amet, consetetur sadipscing elitr, sed diam nonumy eirmod.',
-      contributors: [
-        { avatar: 'http://avatars.githubusercontent.com/u/42612171?s=48&v=4' }
-      ]
-    },
-  ];
-  const panelData = [
-    {
-      title: 'Employee 1',
-      content: <EmployeeDetails />
-    },
-    {
-      title: 'Employee 2',
-      content: <div>eish waaaaa</div>
-    },
-  ];
+  const fetchOptions = makeOptions('GET', true);
+  const [adminDetails] = useFetch('https://principal-serve.herokuapp.com/api/v1/employees/auth/login', makeOptions('POST', false, JSON.stringify({email: 'johndoe@test.com', password: 'password123'})));
+  const [adminProjects, isAdminProjectsPending] = useFetch('https://principal-serve.herokuapp.com/api/v1/employee-project/60fe5dd74e250b42fa7fdecc', fetchOptions);
+  const [employees] = useFetch('https://principal-serve.herokuapp.com/api/v1/employees', fetchOptions);
+  const [allProjects] = useFetch('https://principal-serve.herokuapp.com/api/v1/projects', fetchOptions);
+
+  const otherEmployees = employees?.filter(e => e._id !== adminDetails?.employee._id)?.map(e => ({
+    title: e.firstName + ' ' + e.lastName,
+    content: <EmployeeDetails employeeName={e.firstName + ' ' + e.lastName} employeeId={e._id} employeeRole={e.role.title}/>
+  }));
+
   const [activeTab, setActiveTab] = useState('Employees');
+  const { authenticate } = useContext(AuthContext);
   const handleChangeTab = (e) => {
     setActiveTab(e.target.innerHTML);
+  }
+  const handleSignOut = () => {
+    localStorage.clear();
+    authenticate();
   }
 
 
@@ -123,28 +103,43 @@ function Main() {
         <UserDetails>
           <SquareImage size="10em" src="" />
           <div>
-            <H2>Doe John</H2>
-            <P>Administrator</P>
+            <H2>{adminDetails && `${adminDetails.employee.firstName} ${adminDetails.employee.lastName}`}</H2>
+            <P>{adminDetails?.role.title}</P>
             <SignOutBtn small outlined
               color="fontColor"
+              onClick={handleSignOut}
             >
               SIGN OUT
             </SignOutBtn>
           </div>
         </UserDetails>
         <SectionHeader>Your Projects</SectionHeader>
+
         <Projects>
-          {projects.map(project => {
-            return <ProjectCard key={project.projTitle} {...project}></ProjectCard>
-          })}
+          {isAdminProjectsPending
+          ? <div>Loading Projects...</div>
+          : !adminProjects
+            ? <div>No data available.</div>
+            : adminProjects.map(project => {
+                return (
+                  <ProjectCard
+                    key={project.projectId.name}
+                    projTitle={project.projectId.name}
+                    desc={project.projectId.description}
+                    contributors={project.contributors}
+                  ></ProjectCard>
+                );
+              })
+          }
         </Projects>
+
         <OverviewHeader>
           <H2
             onClick={handleChangeTab}
             className={cx('tabTitle', {'active': activeTab === 'Employees'})}
           >Employees</H2>
           <H2
-            style={{marginLeft: '2em'}}
+            style={{margin: '0 1em'}}
             onClick={handleChangeTab}
             className={cx('tabTitle', {'active': activeTab === 'Projects'})}
           >Projects</H2>
@@ -153,15 +148,19 @@ function Main() {
             placeholder="Find Employee"
             icon="/icons/search.svg"
             style={{width: '27em'}}
+            disabled
           />
-          <AddBtn color="">ADD EMPLOYEE</AddBtn>
+          <AddBtn disabled>{activeTab === 'Employees' ? 'ADD EMPLOYEE' : 'ADD PROJECT'}</AddBtn>
         </OverviewHeader>
         <OverviewContainer>
           { activeTab === 'Employees'
-            ? <ExpansionPanel panels={panelData} />
+            ? <ExpansionPanel panels={otherEmployees||[]} />
             : <ProjectCards>
-              {projects.map(project => {
-                return <ProjectCard key={project.projTitle} {...project} />
+              {allProjects?.map(project => {
+                return <ProjectCard key={project.name}
+                projTitle={project.name}
+                desc={project.description}
+                contributors={project.contributors} />
               })}
             </ProjectCards>
           }
